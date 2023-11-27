@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
 import Button from '../Button';
-import Toast from '../Toast';
+import ToastShelf from '../ToastShelf';
 
 import styles from './ToastPlayground.module.css';
 
@@ -10,16 +10,26 @@ const VARIANT_OPTIONS = ['notice', 'warning', 'success', 'error'];
 function ToastPlayground() {
   const [message, setMessage] = useState('');
   const [variant, setVariant] = useState(VARIANT_OPTIONS[0]);
-  const [showToast, setShowToast] = useState(false);
+  const [toasts, setToasts] = useState([]);
 
-  function handleDismiss() {
-    setShowToast(false);
-    setMessage('');
+  function handleDismiss(id) {
+    const nextToasts = toasts.filter((item) => {
+      return id !== item.id;
+    });
+
+    setToasts(nextToasts);
   }
 
   function handlePop(e) {
     e.preventDefault();
-    setShowToast(true);
+
+    setToasts((prev) => [
+      ...prev,
+      { id: crypto.randomUUID(), message, variant },
+    ]);
+
+    setMessage('');
+    setVariant(VARIANT_OPTIONS[0]);
   }
 
   return (
@@ -29,11 +39,7 @@ function ToastPlayground() {
         <h1>Toast Playground</h1>
       </header>
 
-      {showToast && (
-        <Toast variant={variant} handleDismiss={handleDismiss}>
-          {message}
-        </Toast>
-      )}
+      <ToastShelf handleDismiss={handleDismiss} toasts={toasts} />
 
       <form className={styles.controlsWrapper} onSubmit={handlePop}>
         <div className={styles.row}>
@@ -46,7 +52,7 @@ function ToastPlayground() {
           </label>
           <div className={styles.inputWrapper}>
             <textarea
-              required
+              required={true}
               id="message"
               value={message}
               onChange={(e) => setMessage(e.target.value)}
